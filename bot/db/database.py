@@ -1,60 +1,55 @@
+from sqlalchemy.orm import Session
+from .models import User, Tasks, BaseModel
+from sqlalchemy import select, create_engine, update, delete
 from .base import BaseModel
 from dotenv import load_dotenv
 import os
+from utils import log_action
 
 load_dotenv()
-from sqlalchemy import select, create_engine, update, delete
-from .models import User, Tasks, BaseModel
-from sqlalchemy.orm import Session
 
 session = None
+engine = None
 
 
 async def start_db():
+    global engine
     engine = create_engine(os.getenv("sqlite_url"), echo=True)
-    with engine.connect() as conn:
+    with engine.connect():
         BaseModel.metadata.create_all(bind=engine)
 
     global session
     session = Session(bind=engine)
 
 
+async def shutdown_db():
+    session.close()
+    engine.dispose()
+
+
 async def add_user(username: str, id: int):
     with session as ses:
         stmt = select(User).where(User.tg_user_id == id)
         user = ses.execute(stmt).all()
-        print(user)
         if not user:
             ses.add(User(username=username, tg_user_id=id))
             ses.commit()
+            log_action().info("User Added to Database")
 
 
 async def add_task(title: str, description: str, owner_id):
     with session as ses:
         ses.add(Tasks(title=title, description=description, owner_id=owner_id))
         ses.commit()
+        log_action().info("Task Added to Database")
 
 
 async def get_tasks(id):
-    print(id)
     with session as ses:
         stmt = select(Tasks).where(Tasks.owner_id == id)
         tasks = ses.execute(stmt).scalars().all()
-        if len(tasks) == 0:
-            return "Ваш Список дел Пуст"
-        text = ""
-        counter = 1
-        for task in tasks:
-            status = "🔘"
-            if task.status:
-                status = "✅"
-            task_desc = (
-                f"{counter}) {task.title} - {task.description} ({task.id}) {status}\n"
-            )
-            text += task_desc
-            print(task_desc)
 
-        return text
+        return tasks
 
 
 async def change_task_status(task_id, owner_id):
@@ -69,6 +64,7 @@ async def change_task_status(task_id, owner_id):
         if result.rowcount == 0:
             return False
         ses.commit()
+        log_action().info("Task's Status changed to done")
         return True
 
 
@@ -81,4 +77,5 @@ async def delete_task_from_db(task_id, owner_id):
         if result.rowcount == 0:
             return False
         ses.commit()
+        log_action().info("Task Was deleted from Database")
         return True

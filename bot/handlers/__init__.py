@@ -1,13 +1,12 @@
-from .basic import (
+from .message_handlers import (
     start_handler,
     invalid_answer,
-    on_startup,
     get_task_desc,
     get_task_name,
-    add_command,
-    get_all_tasks,
-    done_task,
     change_task_by_id,
-    delete_task,
     delete_task_by_id,
 )
+
+from .callback_handlers import get_all_tasks, delete_task, done_task, add_command
+
+from .base import on_startup, on_shutdown

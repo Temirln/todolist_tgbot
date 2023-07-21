@@ -3,6 +3,7 @@ from handlers import (
     start_handler,
     invalid_answer,
     on_startup,
+    on_shutdown,
     add_command,
     get_task_desc,
     get_task_name,
@@ -15,7 +16,6 @@ from handlers import (
 from dotenv import load_dotenv
 import os
 import asyncio
-import logging
 
 from aiogram.filters import Command
 from aiogram import F
@@ -27,9 +27,9 @@ async def main() -> None:
     load_dotenv()
     bot = Bot(os.getenv("TOKEN"))
     dp = Dispatcher()
-    logging.basicConfig(level=logging.DEBUG)
 
     dp.startup.register(on_startup)
+    dp.shutdown.register(on_shutdown)
 
     dp.message.register(start_handler, Command(commands=["start", "run"]))
 

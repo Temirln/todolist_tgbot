@@ -7,4 +7,5 @@ from .database import (
     get_tasks,
     change_task_status,
     delete_task_from_db,
+    shutdown_db,
 )
