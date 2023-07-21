@@ -12,7 +12,7 @@ from handlers import (
     change_task_by_id,
     delete_task,
     delete_task_by_id,
-    show_keyboard
+    show_keyboard,
 )
 from dotenv import load_dotenv
 import os

@@ -5,7 +5,7 @@ from .message_handlers import (
     get_task_name,
     change_task_by_id,
     delete_task_by_id,
-    show_keyboard
+    show_keyboard,
 )
 
 from .callback_handlers import get_all_tasks, delete_task, done_task, add_command
