@@ -1,38 +1,47 @@
-from aiogram import Bot,Dispatcher,executor,types
-from aiogram.types import ReplyKeyboardMarkup
+from aiogram import Bot,Dispatcher,types
+from handlers import start_handler,invalid_answer,on_startup,add_command,get_task_desc,get_task_name,done_task,get_all_tasks,get_task_id
 from dotenv import load_dotenv
 import os
+import asyncio
+import logging
 
-load_dotenv()
+from db import BaseModel,User,create_async_engine,proceed_schemas,get_session_maker
+from aiogram.filters import Command
+from aiogram import F
 
-main = ReplyKeyboardMarkup(resize_keyboard=True)
-main.add('Каталог').add("Корзина").add("Contacts")
-
-bot = Bot(os.getenv('TOKEN'))
-dp = Dispatcher(bot=bot)
-
-@dp.message_handler(commands=['start'])
-async def cmd_start(message: types.Message):
-    # await message.answer_sticker("CAACAgIAAxkBAAIFOGS5CFJMlrtob-3E0oTOT8XmwBIuAAKrNQACtNoRSZKs_yZJI4DjLwQ")
-    await message.answer(f"Доро пожаловать {message.from_user.full_name}, в To Do List телеграм бот",reply_markup=main)
-
-@dp.message_handler(commands=['add'])
-async def add_task(message: types.Message):
-    await message.answer(f"Добавить новый таск <задача>")
-
-@dp.message_handler(commands=['done'])
-async def add_task(message: types.Message):
-    await message.answer(f"Выполнен один таск <индекс>")
-
-@dp.message_handler(commands=['list'])
-async def list_of_task(message: types.Message):
-    await message.answer(f"Список тасков")
+from utils.stateforms import StepsForm
 
 
-@dp.message_handler()
-async def answer(message: types.Message):
-    await message.reply('Я ваc не понял')
+
+async def main() -> None:
+    load_dotenv()
+    bot = Bot(os.getenv('TOKEN'))
+    dp = Dispatcher()
+    logging.basicConfig(level=logging.DEBUG)
+
+    dp.startup.register(on_startup)
+    # dp.shutdown.register()
+
+    dp.message.register(start_handler,Command(commands=['start','run']))
+
+    # ADD TASK
+    dp.callback_query.register(add_command,F.data == "add_task")
+    dp.message.register(get_task_name,StepsForm.GET_task_title)
+    dp.message.register(get_task_desc,StepsForm.GET_task_description)
+
+    # LIST TASKS
+    dp.callback_query.register(get_all_tasks,F.data == "list_all_task")
+    
+    # Done Task
+    dp.callback_query.register(done_task,F.data == "done_task")  
+    dp.message.register(get_task_id,StepsForm.CHANGE_task_status)
+
+    dp.message.register(invalid_answer)
+
+
+
+    await dp.start_polling(bot)
 
 
 if __name__ == "__main__":
-    executor.start_polling(dp)
+    asyncio.run(main())
