@@ -15,9 +15,9 @@ async def get_all_tasks(call: types.CallbackQuery):
     if len(tasks) == 0:
         call.message.reply("Ваш Список дел Пуст")
 
-    table = [["col", "Title", "Description", "Index", "Status", "Mark"]]
-
-    tab = PrettyTable(table[0])
+    # table = [["col", "Title", "Description", "Index", "Status", "Mark"]]
+    text = ""
+    # tab = PrettyTable(table[0])
 
     for index, task in enumerate(tasks):
         status = "Не Выполнен"
@@ -26,12 +26,14 @@ async def get_all_tasks(call: types.CallbackQuery):
             status_mark = "✅"
             status = "Выполнен"
 
-        table.append(
-            [index + 1, task.title, task.description, task.id, status, status_mark]
-        )
+        text += f"""{index+1}){task.title}\n   Описание: {task.description}\n   Статус: {status}{status_mark}\n   Индекс: {task.id} \n\n"""
+        # table.append(
+        #     [index + 1, task.title, task.description, task.id, status, status_mark]
+        # )
 
-    tab.add_rows(table[1:])
-    await call.message.reply(f"<pre>{tab}</pre>", parse_mode="HTML")
+    # tab.add_rows(table[1:])
+    # await call.message.reply(f"<pre>{tab}</pre>", parse_mode="HTML")
+    await call.message.answer(text)
 
 
 async def done_task(call: types.CallbackQuery, state: FSMContext):

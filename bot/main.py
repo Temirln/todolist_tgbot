@@ -12,6 +12,7 @@ from handlers import (
     change_task_by_id,
     delete_task,
     delete_task_by_id,
+    show_keyboard
 )
 from dotenv import load_dotenv
 import os
@@ -32,6 +33,7 @@ async def main() -> None:
     dp.shutdown.register(on_shutdown)
 
     dp.message.register(start_handler, Command(commands=["start", "run"]))
+    dp.message.register(show_keyboard, Command(commands=["keyboard"]))
 
     # ADD TASK
     dp.callback_query.register(add_command, F.data == "add_task")

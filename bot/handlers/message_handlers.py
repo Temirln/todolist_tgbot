@@ -18,6 +18,9 @@ async def start_handler(message: types.Message):
         reply_markup=get_todolist_inline_keyboard(),
     )
 
+async def show_keyboard(message: types.Message):
+    await message.answer("Выберите Одно действие:",reply_markup=get_todolist_inline_keyboard())
+
 
 async def get_task_name(message: types.Message, state: FSMContext):
     await state.update_data(title=message.text)
